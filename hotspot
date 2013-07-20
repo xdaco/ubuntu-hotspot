@@ -137,12 +137,12 @@ function config_hotspot {
                                 
 				elif [[ $SSID_STATE == "Y" || $SSID_STATE == "y" ]]
  					then
-						echo "SSID_STATE=$SSID_STATE"
+						#echo "SSID_STATE=$SSID_STATE"
 						HIDE='1'
 						echo "Setting SSID invisible"
 				elif [[ $SSID_STATE == "n" || $SSID_STATE == "N" ]]
  					then
-						echo "SSID_STATE=$SSID_STATE"
+						#echo "SSID_STATE=$SSID_STATE"
 						echo "Setting SSID visible"
 						HIDE='0'
  						
