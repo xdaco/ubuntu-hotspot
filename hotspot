@@ -16,10 +16,10 @@ SSID_STATE=0
 SSID_HIDE=0
 
 ##########   Hostapd config details    ###########
-#  					##
+#  						##
 #	interface=wlan0				##
 #	driver=nl80211				##	
-#	ssid=Musa-WiZone			##
+#	ssid=Ubuntu_Hotspot			##
 #	hw_mode=g				##
 #	auth_algs=1                             ##
 #       ignore_broadcast_ssid=1 		##
