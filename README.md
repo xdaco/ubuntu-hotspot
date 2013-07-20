@@ -14,5 +14,7 @@ open terminal in the downloaded folder.
 and type:
 
 $ sudo chmod a+x installer
+
 $ sudo chmod a+x hotspot
+
 $ sudo sh ./installer
