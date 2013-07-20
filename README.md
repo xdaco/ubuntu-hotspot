@@ -10,7 +10,7 @@ How to :
 
 Download installer.
 Download hotspot
-open terminal in the downloaded folder.
+open terminal in the downloaded folder
 and type:
 
 $ sudo chmod a+x installer
