@@ -1,1 +1,23 @@
+#!/bin/bash
 #This is a bash script to install the necessary file and configure them.
+
+apt-get install hostapd
+echo "interface=wlan0
+driver=nl80211
+ssid=Ubuntu_Hotspot
+hw_mode=g
+auth_algs=1
+wpa=2
+wpa_passphrase=123456789
+wpa_pairwise=TKIP CCMP
+wpa_key_mgmt=WPA-PSK
+channel=1
+rsn_pairwise=CCMP" > /etc/hostapd/hostapd.conf
+apt-get purge dhcpd
+apt-get install dnsmasq
+echo "DNSMASQ_OPTS=" -conf-file=/etc/dnsmasq.conf"" >/etc/default/dnsmasq
+echo "interface=wlan0
+dhcp-range=192.168.0.2,192.168.0.127,12h " > /etc/dnsmasq.conf
+cp hotspot /usr/bin/hotspot
+chmod a+x /usr/bin/hotspot
+
