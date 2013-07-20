@@ -11,7 +11,7 @@ BROADCASTIP="192.168.0.1"
 #RECEIVE="hso0" for internet 3g modem. etc
 hstate=0
 RECEIVE=''
-SSID='Musa-WiZone'
+SSID='Ubuntu_Hotspot'
 SSID_STATE=0
 SSID_HIDE=0
 
@@ -119,7 +119,7 @@ function config_hotspot {
 				if [ -z $SSID ]
 					then 
 						echo "Setting the deafult SSID name"
-						SSID='Musa-WiZone'
+						SSID='Ubuntu_Hotspot'
  				fi
 				echo "Please enter an passkey for the hotspot"
 				read PASSPHRASE
