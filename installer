@@ -24,7 +24,7 @@ echo "Thank you for installing hotspot."
 echo "To know usgae type sudo hotsopt in the terminal."
 echo "Do you want to install minidlna-  A tiny dlna server??"
 read -p "Press Y/n for your answer." ans
-echo "ans=$ans"
+
 
    			if [[ "$ans" == "Y" || "$ans" == "y" ]]
  				then
