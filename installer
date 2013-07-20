@@ -23,18 +23,20 @@ chmod a+x /usr/bin/hotspot
 echo "Thank you for installing hotspot."
 echo "To know usgae type sudo hotsopt in the terminal."
 echo "Do you want to install minidlna-  A tiny dlna server??"
-read ans
-   			if [[ $ans == "Y" || $ans == "y" ]]
- 					then
+read -p "Press Y/n for your answer." ans
+echo "ans=$ans"
+
+   			if [[ "$ans" == "Y" || "$ans" == "y" ]]
+ 				then
  					apt-get install minidlna
-          echo "Please edit '/etc/minidlna.conf' to fulfill your need."
+          				echo "Please edit '/etc/minidlna.conf' to fulfill your need."
 						
-				elif [[ $ans == "N" || $ans == "n" ]]
+				elif [[ "$ans" == "N" || "$ans" == "n" ]]
  					then
 					echo "Thank you. Good bye. Enjoy."
  					
  				else 
- 					echo ""
+ 					
  					echo "I could not understand your answer" 		
-				fi
-exit 0
+			fi
+exit 
