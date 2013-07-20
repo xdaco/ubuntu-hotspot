@@ -17,4 +17,4 @@ $ sudo chmod a+x installer
 
 $ sudo chmod a+x hotspot
 
-$ sudo sh ./installer
+$ sudo bash ./installer
