@@ -24,7 +24,7 @@ SSID_HIDE=0
 #	auth_algs=1                             ##
 #       ignore_broadcast_ssid=1 		##
 #	wpa=2					##
-#	wpa_passphrase=900717148835051834	##
+#	wpa_passphrase=123456789		##
 #	wpa_pairwise=TKIP CCMP			##
 #	wpa_key_mgmt=WPA-PSK			##
 #	channel=1				##
@@ -126,7 +126,7 @@ function config_hotspot {
 				if [ -z $PASSPHRASE ]
  					then 
 						echo "Setting the deafult passkey"
- 						PASSPHRASE='99350518349007171488'
+ 						PASSPHRASE='123456789'
 				fi
 				echo "Do you want to hide your SSID? Press 'Y/N' "
 				read SSID_STATE
