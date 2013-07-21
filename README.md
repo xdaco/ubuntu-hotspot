@@ -9,9 +9,9 @@ script named hotspot.
 How to:
 -------
 
-Download and Extract.
+*Download the released soucrecode [from here](https://github.com/xdaco/ubuntu-hotspot/releases) and Extract.
 Go to the extracted folder.
-Open terminal and  type:
+Open terminal and  type:*
 
 #
 ```bash
