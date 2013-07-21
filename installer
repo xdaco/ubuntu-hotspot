@@ -20,7 +20,6 @@ echo "DNSMASQ_OPTS=" -conf-file=/etc/dnsmasq.conf"" >/etc/default/dnsmasq
 echo "interface=wlan0
 dhcp-range=192.168.0.2,192.168.0.127,12h " > /etc/dnsmasq.conf
 cp hotspot /usr/bin/hotspot
-chmod a+x /usr/bin/hotspot
 echo "Thank you for installing hotspot."
 echo "To know usgae type sudo hotsopt in the terminal."
 echo "Do you want to install minidlna-  A tiny dlna server??"
