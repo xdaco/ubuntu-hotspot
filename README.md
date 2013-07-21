@@ -7,10 +7,11 @@ script named hotspot.
 
 
 How to:
+-------
 
 Download the installer.
 
-Open terminal in the downloaded folder.
+Open terminal in the downloaded folder
 and type:
 
 $ sudo chmod a+x installer
