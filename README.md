@@ -9,7 +9,7 @@ script named hotspot.
 How to :
 
 Download installer.
-Download hotspot
+Download hotspot.
 open terminal in the downloaded folder
 and type:
 
