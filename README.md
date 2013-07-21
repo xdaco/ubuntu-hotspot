@@ -6,15 +6,13 @@ The installer will automatically install hostapd, uninstall default dhcp server 
 script named hotspot.
 
 
-How to :
+How to:
 
-Download installer.
-Download hotspot.
-open terminal in the downloaded folder
+Download the installer.
+
+Open terminal in the downloaded folder.
 and type:
 
 $ sudo chmod a+x installer
-
-$ sudo chmod a+x hotspot
 
 $ sudo bash ./installer
