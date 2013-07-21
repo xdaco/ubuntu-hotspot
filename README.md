@@ -9,11 +9,13 @@ script named hotspot.
 How to:
 -------
 
-Download the installer.
+Download and Extract.
+Go to the extracted folder.
+Open terminal and  type:
 
-Open terminal in the downloaded folder
-and type:
-
+#
+```bash
 $ sudo chmod a+x installer
-
 $ sudo bash ./installer
+
+````
