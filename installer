@@ -1,7 +1,5 @@
 #!/bin/bash
 #This is a bash script to install the necessary file and configure them.
-wget https://raw.github.com/xdaco/ubuntu-hotspot/master/hotspot
-chmod a+x hotspot
 apt-get install hostapd
 echo "interface=wlan0
 driver=nl80211
@@ -19,6 +17,7 @@ apt-get install dnsmasq
 echo "DNSMASQ_OPTS=" -conf-file=/etc/dnsmasq.conf"" >/etc/default/dnsmasq
 echo "interface=wlan0
 dhcp-range=192.168.0.2,192.168.0.127,12h " > /etc/dnsmasq.conf
+chmod a+x hotspot
 cp hotspot /usr/bin/hotspot
 echo "Thank you for installing hotspot."
 echo "To know usgae type sudo hotsopt in the terminal."
