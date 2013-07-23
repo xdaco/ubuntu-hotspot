@@ -65,6 +65,12 @@ function find_RECEIVE {
  						#echo "The active internet adapter is ppp0."
  						RECEIVE="ppp0"
  						notify-send 'Internet Connection Available!' 'The active adapter is ppp0.' --icon=dialog-information
+ 				elif grep --quiet eth0 /proc/net/route; 
+ 					then
+ 						#echo "The active internet adapter is eth0."
+ 						RECEIVE="eth0"
+ 						notify-send 'Internet Connection Available!' 'The active adapter is eth0.' --icon=dialog-information
+ 				
  				elif grep --quiet usb0 /proc/net/route; 
  					then
  						#echo "The active internet adapter is usb0."
@@ -73,7 +79,7 @@ function find_RECEIVE {
  				else
  					#echo "The active internet adapter is not found; using default internal adapter..."
  					RECEIVE="hso0"
- 					otify-send 'No Connection Available!' 'Please check your internet connection.' --icon=dialog-error
+ 					notify-send 'No Connection Available!' 'Please check your internet connection.' --icon=dialog-error
  				fi 
 			}
 
@@ -208,10 +214,12 @@ function start_hotspot {
 					then
 						echo "$(tput bold)$(tput setaf 1)Hotspot did not start"
 						echo "Something went wrong. I am sorry ...$(tput sgr0)"
+						notify-send 'WiFi HotSpot not running!' 'Something wired happend.' --icon=dialog-error
 				elif [ $hstate == "1" ]
 					then
 						echo "$(tput bold)$(tput setaf 2)Hotspot started.."
 						echo "$(tput sgr0)"
+						notify-send 'WiFi HotSpot Started!' 'You can connect other devices to the hotspot.' --icon=dialog-information
 				fi
  			}
 
