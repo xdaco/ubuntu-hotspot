@@ -1,0 +1,405 @@
+#!/bin/bash
+# This script is written by xdaco ; You are free to enhance it
+# broadcasting interface
+BROADCAST="wlan0"
+BROADCASTIP="192.168.0.1"
+#receiving interface broadcast is connected to
+#The variable RECEIVE will be the adapter whose internet connection to be shared.
+#We will do a series of test to determine which adapter is currently connected to the internet.
+#These test are done in ics section of the script.
+#Once we determine the correct adapter , we will assign it then as RECEIVE. e.g
+#RECEIVE="hso0" for internet 3g modem. etc
+hstate=0
+RECEIVE=''
+SSID='Ubuntu_Hotspot'
+SSID_STATE=0
+SSID_HIDE=0
+
+##########   Hostapd config details    ###########
+#    					##
+#	interface=wlan0				##
+#	driver=nl80211				##	
+#	ssid=Ubuntu_Hotspot			##
+#	hw_mode=g				##
+#	auth_algs=1                             ##
+#       ignore_broadcast_ssid=1 		##
+#	wpa=2					##
+#	wpa_passphrase=123456789		##
+#	wpa_pairwise=TKIP CCMP			##
+#	wpa_key_mgmt=WPA-PSK			##
+#	channel=1				##
+#	rsn_pairwise=CCMP			##
+#						##
+##################################################
+
+function show_help {
+ 			echo "$(tput bold)$(tput setaf 2)"
+ 			echo $0
+ 			echo "A tool to manage WiFi hotspot using hostapd and dnsmasq DHCP server"
+ 			echo "Usage:"
+ 			echo "	-0 --start	Start WiFi Hotspot; This calls hostapd and"
+ 			echo "                        starts dnsmasq"
+ 			echo "	-1 --stop	Stop WiFi Hotspot; This stops hostapd and"
+ 			echo "                        dhcpd3 with signal 2"
+			echo "	-2 --ics	Activate internet connection sharing"
+ 			echo "			between specified interfaces"
+ 			echo "	-3 --noics	Undo internet connection sharing settings"
+ 			echo "	-4 --dlna	Start MiniDlna media Server"
+			echo "	-5 --scan-dlna	Stop MiniDlna media Server"
+			echo "	-6 --nodlna	Stop MiniDlna media Server"
+ 			echo "	-7 --config	Configure WiFi Hostspot name and passkey"
+ 			echo "$(tput sgr0)"
+		}
+
+
+function find_RECEIVE {
+
+ 				# Find the active internet interface
+ 				if grep --quiet hso0 /proc/net/route; 
+ 					then
+ 						#echo "The active internet adapter is hso."
+ 						RECEIVE="hso0"
+ 				elif grep --quiet ppp0 /proc/net/route; 
+ 					then
+ 						#echo "The active internet adapter is ppp0."
+ 						RECEIVE="ppp0"
+ 				elif grep --quiet usb0 /proc/net/route; 
+ 					then
+ 						#echo "The active internet adapter is usb0."
+ 						RECEIVE="usb0"
+ 				else
+ 					#echo "The active internet adapter is not found; using default internal adapter..."
+ 					RECEIVE="hso0"
+ 				fi 
+			}
+
+function hotspot_status {
+				hotspot=$( ifconfig | grep 192.168.0.1 )
+ 				if [ -z "$hotspot" ]
+ 					then
+ 						hstate=0
+ 				else
+ 
+ 					hstate=1
+				fi 
+			}
+
+function share_internet ( ) {
+				# create iptables rules
+				iptables -A FORWARD -i $RECEIVE -o $BROADCAST -s 192.168.0.1/24 -m conntrack --ctstate NEW -j ACCEPT
+				iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+				iptables -A POSTROUTING -t nat -j MASQUERADE
+				# set kernel variable(s)
+				echo 1 > /proc/sys/net/ipv4/conf/all/forwarding
+				# edit kernel configuration
+				cp /etc/sysctl.conf /etc/sysctl.conf.ap_ctl
+				echo "net.ipv4.conf.default.forwarding=1" >> /etc/sysctl.conf
+				echo "net.ipv4.conf.all.forwarding=1" >> /etc/sysctl.conf
+				# restart networking
+				#/etc/init.d/networking restart
+				#wget -q -O  - checkip.dyndns.org|sed -e 's/.*Current IP Address: //' -e 's/<.*$//'
+				}
+
+function stop_share_internet {
+				#remove iptables rules
+ 				iptables -D FORWARD 1
+ 				iptables -D FORWARD 1
+				# set kernel variable(s)
+				echo 0 > /proc/sys/net/ipv4/conf/all/forwarding
+				# revert kernel configuration
+				mv -i -f /etc/sysctl.conf.ap_ctl /etc/sysctl.conf
+				# restart networking
+ 				#/etc/init.d/networking restart
+				}
+
+function config_hotspot {
+				echo "$(tput bold)$(tput setaf 2)"
+				echo "Please enter an SSID for the hotspot"
+				read SSID
+				if [ -z $SSID ]
+					then 
+						echo "Setting the deafult SSID name"
+						SSID='Ubuntu_Hotspot'
+ 				fi
+				echo "Please enter an passkey for the hotspot"
+				read PASSPHRASE
+				if [ -z $PASSPHRASE ]
+ 					then 
+						echo "Setting the deafult passkey"
+ 						PASSPHRASE='123456789'
+				fi
+				echo "Do you want to hide your SSID? Press 'Y/N' "
+				read SSID_STATE
+				if [ -z $SSID_STATE ]
+ 					then 
+						echo "Setting SSID visible"
+ 						HIDE='0'
+                                
+				elif [[ $SSID_STATE == "Y" || $SSID_STATE == "y" ]]
+ 					then
+						#echo "SSID_STATE=$SSID_STATE"
+						HIDE='1'
+						echo "Setting SSID invisible"
+				elif [[ $SSID_STATE == "n" || $SSID_STATE == "N" ]]
+ 					then
+						#echo "SSID_STATE=$SSID_STATE"
+						echo "Setting SSID visible"
+						HIDE='0'
+ 						
+ 				else 
+ 					echo ""
+					echo "$(tput bold)$(tput setaf 5)I could not understand your answer....$(tput sgr0)"
+					echo "Setting SSID visible"
+ 					HIDE='0'
+ 					
+ 				fi
+				
+				FILE=/etc/hostapd/hostapd.conf
+				echo "interface=wlan0
+driver=nl80211
+ssid=$SSID
+hw_mode=g
+auth_algs=1
+ignore_broadcast_ssid=$HIDE
+wpa=2
+wpa_passphrase=$PASSPHRASE
+wpa_pairwise=TKIP CCMP
+wpa_key_mgmt=WPA-PSK
+channel=1
+rsn_pairwise=CCMP" > $FILE
+#echo "ssid=$SSID" >> $FILE
+				echo "$(tput sgr0)"
+			 }
+function start_hotspot {
+				echo "$(tput bold)$(tput setaf 2)"
+				echo "Starting WiFi Hotspot on your computer...."
+                                say  "Starting WiFi Hotspot on your computer."
+				echo "You can share any available internet "
+				echo "connection of your pc over WiFi.."
+				echo "You can view the log at /var/log/hostapd.log"
+				sleep 1
+				hostapd -d /etc/hostapd/hostapd.conf > /var/log/hostapd.log &
+				sleep 4
+				## start dhcp server
+				dnsmasq_state=$( ps -A | grep dnsmasq )
+				if [ -z "$dnsmasq_state" ]
+					then
+						sleep 1
+				else
+					echo "$(tput bold)$(tput setaf 1)Stopping previous dhcp session$(tput sgr0)"
+					/etc/init.d/dnsmasq stop
+					killall -2 -q dnsmasq
+				fi
+				echo "$(tput bold)$(tput setaf 2)Starting dnsmasq DHCP Server on wlan0"
+				# set IP address
+				ifconfig $BROADCAST $BROADCASTIP
+				sleep 2
+				# launch dnsmasq dhcp  daemon
+				#echo "INTERFACES=$BROADCAST" > /etc/default/dhcp
+				dnsmasq  --conf-file=/etc/dnsmasq.conf
+				sleep 1
+				echo "$(tput bold)$(tput setaf 2)DHCP Server Started...$(tput sgr0)"
+				hotspot_status
+				if [ $hstate == "0"  ]
+					then
+						echo "$(tput bold)$(tput setaf 1)Hotspot did not start"
+						echo "Something went wrong. I am sorry ...$(tput sgr0)"
+				elif [ $hstate == "1" ]
+					then
+						echo "$(tput bold)$(tput setaf 2)Hotspot started.."
+						echo "$(tput sgr0)"
+				fi
+ 			}
+
+function stop_hotspot {
+				# send signal 2 to hostapd and dnsmasq
+				echo "$(tput bold)$(tput setaf 1)"
+				echo "Stopping DHCP Server..."
+				sleep 1
+				#/etc/init.d/dnsmasq stop
+				killall -2 -q dnsmasq 
+				echo "$(tput bold)$(tput setaf 1)DHCP server stopped..."
+				sleep 1
+				echo "$(tput bold)$(tput setaf 1)Killing hostapd, dnsmasq..."
+				#killall -2 -q hostapd dnsmasq
+				killall -2 -q hostapd 
+				sleep 2
+				ps ax > /var/log/dlna_state
+				dlna=$( cat /var/log/dlna_state | grep dlna )
+				if [ -z "$dlna" ]
+					then
+						sleep 1
+				elif [ 1 ]
+					then
+						echo "$(tput bold)$(tput setaf 1)Killing minidlna media server..."
+						killall -2 -q minidlna
+						sleep 2
+						echo "Minidlna media server was killed..$(tput sgr0)"
+				fi
+				
+                 }
+
+##### Main part of the script starts here #####
+
+if [[ $1 == "-0" || $1 == "--start" ]]
+	then
+		hotspot_status
+		if [ $hstate == "1"  ]
+       			then
+				echo "" 				
+				echo "$(tput bold)$(tput setaf 5)Hotspot already running.."
+ 				echo "Do you want to start it again??"
+ 				read -p "Press 'Y' to start WiFi Hotspot again else press N " ans1
+ 				if [[ $ans1 == "Y" || $ans1 == "y" ]]
+ 					then
+ 						echo "$(tput bold)$(tput setaf 1)Stopping the current hotspot session now.."
+ 						stop_hotspot
+ 						echo "$(tput bold)$(tput setaf 2)Starting new hotspot session....$(tput sgr0)"
+ 						start_hotspot
+				elif [[ $ans1 == "N" || $ans1 == "n" ]]
+ 					then
+						echo "$(tput sgr0)"
+ 						exit 0
+ 				else 
+ 					echo ""
+					echo "$(tput bold)$(tput setaf 5)I could not understand your answer....$(tput sgr0)"
+					show_help
+ 					exit 0
+ 				fi
+ 
+		elif [ $hstate == "0"  ]
+			then
+				start_hotspot				
+		fi
+
+ 
+ 
+ elif [[ $1 == "-1" || $1 == "--stop" ]]
+ 	then
+ 		
+		stop_hotspot
+ 		hotspot_status
+ 		if [ $hstate == "0"  ]
+ 			then
+ 				echo "$(tput bold)$(tput setaf 1)Hotspot stopped..$(tput sgr0)"
+				echo ""
+ 		elif [ $hstate == "1" ]
+ 			then
+ 				echo "$(tput bold)$(tput setaf 1)Hotspot still running..$(tput sgr0)"
+ 		fi
+
+ elif [[ $1 == "-2" || $1 == "--ics" ]]
+ 	then
+ 		hotspot_status
+ 		if [ $hstate == "0" ]
+ 			then
+ 				echo "$(tput bold)$(tput setaf 1)"
+ 				echo "WiFi Hotspot is not running.."
+ 				echo "Use --start first to start WiFi Hotspot.."
+				read -p "Or Shall I start WiFi Hotspot for you?? Press 'Y' to start WiFi Hotspot..  " ans
+ 				if [[ $ans == "Y" || $ans == "y" ]]
+ 					then
+ 						start_hotspot
+						
+				elif [[ $ans == "N" || $ans == "n" ]]
+ 					then
+					echo "$(tput sgr0)"
+ 					exit 0
+ 				else 
+ 					echo ""
+ 					echo "$(tput bold)$(tput setaf 5)I could not understand your answer....$(tput sgr0)" 
+ 					show_help
+					exit 0
+ 				fi
+		fi
+ 		echo "$(tput bold)$(tput setaf 2)"
+		echo "WiFi hotspot is running.."
+		echo "Starting Internet connection sharing..."		
+ 		#Find the adapter connected to internet
+		find_RECEIVE
+		rm /var/log/ip
+		wget -q -O /var/log/ip - checkip.dyndns.org # Checking internet connectivity
+		#if [ -z "$ip" ]; this checks a bash variable for emptyness
+		if grep --quiet  "Current IP Check" /var/log/ip; 
+			then
+				share_internet $RECEIVE $BROADCAST
+				IP=$( cat /var/log/ip |sed -e 's/.*Current IP Address: //' -e 's/<.*$//' )
+				echo "The active internet adapter is $RECEIVE."
+				echo "Your current public ip is $IP"
+				echo "Internet Connection is shared over WiFi...$(tput sgr0)"
+				echo ""
+		else
+ 			echo "$(tput bold)$(tput setaf 1)No internet connection is available to share at the moment..."
+			echo "$(tput sgr0)"
+ 			exit 0
+ 		fi
+		 
+elif [[ $1 == "-7" || $1 == "--config" ]]
+	then
+		config_hotspot
+		# DLNA server ON
+
+elif [[ $1 == "-4" || $1 == "--dlna" ]]
+	then
+		hotspot_status
+		if [ $hstate == "1" ]
+ 			then
+				echo "$(tput bold)$(tput setaf 2)"
+				echo "Starting media server MiniDlna.."
+				minidlna -a $BROADCASTIP
+				sleep 2
+				echo "$(tput bold)$(tput setaf 2)MiniDlna Started.."
+				echo "$(tput sgr0)"
+		else
+			echo "$(tput bold)$(tput setaf 1)"
+			echo "To use DLNA feature please start hotspot first"
+			echo "$(tput sgr0)"
+		fi
+elif [[ $1 == "-5" || $1 == "--scan-dlna" ]]
+	then
+		hotspot_status
+		if [ $hstate == "1" ]
+			then
+				echo "$(tput bold)$(tput setaf 2)"
+				echo "Starting media server MiniDlna.."
+				minidlna -R -a $BROADCASTIP
+				sleep 2
+				echo "MiniDlna Started with full rescan.."
+				echo "$(tput sgr0)"
+		else 
+			echo "$(tput bold)$(tput setaf 1)"
+			echo "To use DLNA feature please start hotspot first"
+			echo "$(tput sgr0)"
+		fi
+# DLNA server OFF
+elif [[ $1 == "-6" || $1 == "--nodlna" ]]
+	then
+		# Check first if  minidlna is running by ps -A |grep minidlna
+		dlna_state=$(ps -A |grep minidlna)
+		if [ -z "$dlna_state" ]
+					then
+					echo "$(tput bold)$(tput setaf 5)MiniDlna is not running..$(tput sgr0)"
+		else		
+			echo "$(tput bold)$(tput setaf 1)"
+			echo "Stopping media server MiniDlna.."
+			# send signal 2 to minidlna
+			killall -2 -q minidlna
+			sleep 2
+			echo "$(tput bold)$(tput setaf 1)MiniDlna Stopped.."
+			echo "$(tput sgr0)"
+		fi
+elif [[ $1 == "-3" || $1 == "--noics" ]]
+		then
+			echo "$(tput bold)$(tput setaf 1)"
+			echo "Stopping Internet connection sharing..."
+                        say "Stopping Internet connection sharing."
+			stop_share_internet
+			sleep 1
+			echo "$(tput bold)$(tput setaf 1)Internet connection sharing stopped..."
+			echo "$(tput sgr0)"
+else
+show_help
+fi
+exit 0
+
+
