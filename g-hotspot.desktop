@@ -1,0 +1,10 @@
+[Desktop Entry]
+
+## This is under development ###
+Type=Application
+Encoding=UTF-8
+Name=Ubuntu Hotspot
+Comment=GUI Front end of hotspot
+Exec=application
+Icon=/usr/share/icons/hotspot.png
+Terminal=false
