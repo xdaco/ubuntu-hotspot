@@ -16,7 +16,7 @@ apt-get purge dhcpd
 apt-get install dnsmasq
 echo "DNSMASQ_OPTS=" -conf-file=/etc/dnsmasq.conf"" >/etc/default/dnsmasq
 echo "interface=wlan0
-dhcp-range=10.0.0.2,10.0.0.127,24h " > /etc/dnsmasq.conf
+dhcp-range=10.0.0.2,10.0.0.127,255.255.255.0,24h " > /etc/dnsmasq.conf
 chmod a+x hotspot
 cp hotspot /usr/bin/hotspot
 echo "Thank you for installing hotspot."
