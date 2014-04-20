@@ -2,7 +2,7 @@
 # This script is written by xdaco ; You are free to enhance it
 # broadcasting interface
 BROADCAST="wlan0"
-BROADCASTIP="192.168.0.1"
+BROADCASTIP="10.0.0.1"
 #receiving interface broadcast is connected to
 #The variable RECEIVE will be the adapter whose internet connection to be shared.
 #We will do a series of test to determine which adapter is currently connected to the internet.
@@ -74,7 +74,7 @@ function find_RECEIVE {
 			}
 
 function hotspot_status {
-				hotspot=$( ifconfig | grep 192.168.0.1 )
+				hotspot=$( ifconfig | grep 10.0.0.1 )
  				if [ -z "$hotspot" ]
  					then
  						hstate=0
@@ -86,7 +86,7 @@ function hotspot_status {
 
 function share_internet ( ) {
 				# create iptables rules
-				iptables -A FORWARD -i $RECEIVE -o $BROADCAST -s 192.168.0.1/24 -m conntrack --ctstate NEW -j ACCEPT
+				iptables -A FORWARD -i $RECEIVE -o $BROADCAST -s 10.0.0.1/24 -m conntrack --ctstate NEW -j ACCEPT
 				iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 				iptables -A POSTROUTING -t nat -j MASQUERADE
 				# set kernel variable(s)
