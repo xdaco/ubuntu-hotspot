@@ -1,6 +1,6 @@
 #!/bin/bash
 #This is a bash script to install the necessary file and configure them.
-apt-get install hostapd
+dpkg -i hostapd_1.0-3ubuntu2.1_amd64.deb
 echo "interface=wlan0
 driver=nl80211
 ssid=Ubuntu_Hotspot
