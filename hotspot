@@ -1,6 +1,11 @@
 #!/bin/bash
 # This script is written by xdaco ; You are free to enhance it
 # broadcasting interface
+user=$(who | awk '{print $1}' | sed '/^root$/d' | uniq)
+WMPID=$(ps -u $user | tail -n 1 | awk '{print $1}')
+DBUS=$(egrep -z 'DBUS_SESSION_BUS_ADDRESS|DISPLAY' /proc/${WMPID}/environ | sed -r -e 's/(.)DBUS_/\1 DBUS_/' -e 's/(.)DISPLAY/\1 DISPLAY/')
+LOG_FILE="/tmp/hostapd.log"
+PID_FILE="/tmp/hotspot.pid"
 BROADCAST="wlan0"
 BROADCASTIP="10.0.0.1"
 #receiving interface broadcast is connected to
@@ -31,6 +36,13 @@ SSID_HIDE=0
 #	rsn_pairwise=CCMP			##
 #						##
 ##################################################
+
+function root_check {
+			if [[ ! $(whoami) = "root" ]]; then
+			show_err "Please run the script as root"
+			exit 1
+			fi
+}
 
 function show_help {
  			echo "$(tput bold)$(tput setaf 2)"
@@ -240,7 +252,7 @@ function stop_hotspot {
                  }
 
 ##### Main part of the script starts here #####
-
+root_check
 if [[ $1 == "-0" || $1 == "--start" ]]
 	then
 		hotspot_status
